@@ -223,15 +223,30 @@ for(i in 1:nrow(Y_tilde)){
 dev.off()
 
 
-## Table 1
+## Table S1
 Xtab_tex = xtable::xtable(mc_table)
 attributes(Xtab_tex)$caption = ""
 attributes(Xtab_tex)$label = "tab1"
 attributes(Xtab_tex)$align = rep("c",length(attributes(Xtab_tex)$align))
 print.xtable(Xtab_tex,table.placement = "h!",sanitize.text.function = function(x){x})
 
+## Table S2 (CNAR subtable)
+draws_array <- as_draws_matrix(mod_fit$draws(variables = c("betas", "gammas", "alpha_h", "beta_h")))
+draws_array[,4] <- exp(draws_array[,4])
+post_table <- cbind(mod_fit$summary(variables = c("betas","gammas","alpha_h","beta_h"))[,c(2,4,9,10)],
+                    coda::HPDinterval(as.mcmc(draws_array)))
+post_table <- post_table[,c(1,2,5,6,3,4)]
+post_table
 
-## Table S1
+Xtab_tex = xtable::xtable(post_table)
+attributes(Xtab_tex)$caption = ""
+attributes(Xtab_tex)$label = "tab1"
+attributes(Xtab_tex)$align = rep("c",length(attributes(Xtab_tex)$align))
+print.xtable(Xtab_tex,table.placement = "h!",sanitize.text.function = function(x){x})
+### !!! ###
+
+
+## Table S3
 Xtab_tex = xtable::xtable(pt_table)
 attributes(Xtab_tex)$caption = ""
 attributes(Xtab_tex)$label = "tab1"
@@ -239,7 +254,7 @@ attributes(Xtab_tex)$align = rep("c",length(attributes(Xtab_tex)$align))
 print.xtable(Xtab_tex,table.placement = "h!",sanitize.text.function = function(x){x})
 
 
-## Figure S3
+## Figure S4
 posts <- cbind(drop(merge_chains(x = mod_fit$draws(variables = "betas"))),
                exp(drop(merge_chains(x = mod_fit$draws(variables = "gammas")))),
                drop(merge_chains(x = mod_fit$draws(variables = "alpha_h"))),
@@ -260,23 +275,10 @@ hist(posts[,j],col="#8B8989",border = "white",xlab="",ylab="",main="",nclass = 4
 dev.off()
 
 
-## Table 2
-draws_array <- as_draws_matrix(mod_fit$draws(variables = c("betas", "gammas", "alpha_h", "beta_h")))
-draws_array[,4] <- exp(draws_array[,4])
-post_table <- cbind(mod_fit$summary(variables = c("betas","gammas","alpha_h","beta_h"))[,c(2,4,9,10)],
-                    coda::HPDinterval(as.mcmc(draws_array)))
-post_table <- post_table[,c(1,2,5,6,3,4)]
-post_table
-
-Xtab_tex = xtable::xtable(post_table)
-attributes(Xtab_tex)$caption = ""
-attributes(Xtab_tex)$label = "tab1"
-attributes(Xtab_tex)$align = rep("c",length(attributes(Xtab_tex)$align))
-print.xtable(Xtab_tex,table.placement = "h!",sanitize.text.function = function(x){x})
 
 
 
-# PPC Analysis: CNAR vs CAR-like ------------------------------------------
+# CNAR vs CAR-like models -------------------------------------------------
 
 ## Fitting CAR-like models using M1 specification
 
@@ -319,8 +321,8 @@ z2 <- MASS::kde2d(as.vector(C_car1),as.vector(H_car1),n = 100)
 z3 <- MASS::kde2d(as.vector(C_car2),as.vector(H_car2),n = 100)
 
 
-## Figure S4
-pdf(file = "out/fig4.pdf",width = 16,height = 6)
+## Figure 1a
+pdf(file = "out/fig1a.pdf",width = 16,height = 6)
 ymax <- max(dataout$y_1.h)+median(dataout$y_1.h)*2
 par(mfrow=c(1,2))
 plot(dataout$y_c,dataout$y_1.h,pch=20,cex=1.5,col="white",bty="n",xlab="",ylab="",ylim=c(0,ymax),cex.axis=1.5,cex.lab=2); title(expression(CAR[like]^1 ~vs~ CNAR),adj=0,line=2,cex.main=2)
@@ -334,7 +336,7 @@ contour(z3,col = hcl.colors(10, "YlGnBu"),lwd=1.5,add=TRUE,nlevels = 20)
 points(dataout$y_c,dataout$y_1.h,pch=20,cex=1.5,col="#CD8162")
 dev.off()
 
-## Table S2
+## Table S5
 # bayesian p-vs (transformed)
 c_means <- c(mean(apply(C_cnar,1,mean)>=mean(dataout$y_c)),mean(apply(C_car1,1,mean)>=mean(dataout$y_c)),mean(apply(C_car2,1,mean)>=mean(dataout$y_c)))
 c_vars <- c(mean(apply(C_cnar,1,var)>=var(dataout$y_c)),mean(apply(C_car1,1,var)>=var(dataout$y_c)),mean(apply(C_car2,1,var)>=var(dataout$y_c)))
@@ -410,8 +412,8 @@ bertDist_C_0 <- as.numeric(lapply(DB_reps_0,function(x)1/(n^2)*sum(x))) #bertolu
 bertDist_A_1 <- as.numeric(lapply(DB_cross_1,function(x)1/(n^2)*sum(x))); bertDist_C_1 <- as.numeric(lapply(DB_reps_1,function(x)1/(n^2)*sum(x)))
 bertDist_A_2 <- as.numeric(lapply(DB_cross_2,function(x)1/(n^2)*sum(x))); bertDist_C_2 <- as.numeric(lapply(DB_reps_2,function(x)1/(n^2)*sum(x)))
 
-## Figure S5
-pdf(file = "out/fig5.pdf",width = 12,height = 6)
+## Figure 1b
+pdf(file = "out/fig1b.pdf",width = 12,height = 6)
 par(mfrow=c(1,2))
 boxplot((bertDist_C_0),(bertDist_C_1),(bertDist_C_2),outline=FALSE,frame=FALSE,col=c("#00688B","#548B54","#CD3700"),border = "#404040",cex.axis=1.5,boxwex = 0.5,names=c("CNAR",expression(CAR[like]^1),expression(CAR[like]^2)));abline(h = bertDist_B,col="#FFA500",lwd=2,lty=5); title(expression(u[reps]),adj=0,line=1,cex.main=2); 
 boxplot((bertDist_A_0),(bertDist_A_1),(bertDist_A_2),outline=FALSE,frame=FALSE,col=c("#00688B","#548B54","#CD3700"),border = "#404040",boxwex = 0.5,names = c("CNAR",expression(CAR[like]^1),expression(CAR[like]^2)),cex.axis=1.5);abline(h = bertDist_B,col="#FFA500",lwd=2,lty=5); title(expression(u[cross]),adj=0,line=1,cex.main=2)
@@ -419,9 +421,152 @@ dev.off()
 
 
 
+# Defuzz vs RSEM analysis -------------------------------------------------
 
-# Posterior quantities are computed for each model using a HPC system.
-# The script to be 
+mod <- cmdstanr::cmdstan_model(stan_file = "naive_model.stan")
+y_hat <- round(mapply(function(i)defuzzify_centroid(dataout$y_c[i],si = dataout$y_1.h[i],what = "mean"),1:n))
+
+X <- model.matrix(~dataout$hba1c_categ); Z <- matrix(1,n,1); J <- ncol(X); H <- 1
+mu.theta <- c(rep(0,J),rep(0,H)); sigma.2.theta <- c(rep(6.5,J),rep(6.5,H))
+datastan <- list(n=n,J=J,H=H,K=1185,y=y_hat,X=X,Z=Z,normaliz=dataout$normaliz_factors,
+                 mu_beta=mu.theta[1:J],Sigma_beta=sigma.2.theta[1:J]*diag(J),
+                 mu_gamma=mu.theta[(J+1):(J+H)],Sigma_gamma=sigma.2.theta[(J+1):(J+H)]*diag(H))
+
+mod_fit <- mod$sample(data = datastan,chains = 12,parallel_chains = 12,iter_sampling = 1.0e3,iter_warmup = 2.5e3)
+mod_fit$diagnostic_summary()
+
+Y_hat_defuzz <- matrix(mod_fit$draws(variables = c("y_rep")),ncol = n)
+draws_array <- as_draws_matrix(mod_fit$draws(variables = c("betas", "gammas")))
+draws_array[,4] <- exp(draws_array[,4])
+post_table <- cbind(mod_fit$summary(variables = c("betas","phi[1]"))[,c(2,4,9,10)],
+                    coda::HPDinterval(as.mcmc(draws_array)))
+post_table <- post_table[,c(1,2,5,6,3,4)]
+post_table
+
+## Table S2 (defuzz subtable)
+Xtab_tex = xtable::xtable(post_table)
+attributes(Xtab_tex)$caption = ""
+attributes(Xtab_tex)$label = "tab1"
+attributes(Xtab_tex)$align = rep("c",length(attributes(Xtab_tex)$align))
+print.xtable(Xtab_tex,table.placement = "h!",sanitize.text.function = function(x){x})
+
+
+load(file = "data/rsem_exp_counts.rds")
+has3_rsem <- expCnts[grep(x = expCnts$gene_id,pattern = "HAS3"),][-1]
+has3_rsem <- as.numeric(has3_rsem[iid])
+
+datastan <- list(n=n,J=J,H=H,K=1185,y=has3_rsem,X=X,Z=Z,normaliz=dataout$normaliz_factors,
+                 mu_beta=mu.theta[1:J],Sigma_beta=sigma.2.theta[1:J]*diag(J),
+                 mu_gamma=mu.theta[(J+1):(J+H)],Sigma_gamma=sigma.2.theta[(J+1):(J+H)]*diag(H))
+
+mod_fit <- mod$sample(data = datastan,chains = 12,parallel_chains = 12,iter_sampling = 1.0e3,iter_warmup = 2.5e3)
+mod_fit$diagnostic_summary()
+
+Y_hat_rsem <- matrix(mod_fit$draws(variables = c("y_rep")),ncol = n)
+
+draws_array <- as_draws_matrix(mod_fit$draws(variables = c("betas", "gammas")))
+draws_array[,4] <- exp(draws_array[,4])
+post_table <- cbind(mod_fit$summary(variables = c("betas","phi[1]"))[,c(2,4,9,10)],
+                    coda::HPDinterval(as.mcmc(draws_array)))
+post_table <- post_table[,c(1,2,5,6,3,4)]
+post_table
+
+
+## Table S2 (RSEM subtable)
+Xtab_tex = xtable::xtable(post_table)
+attributes(Xtab_tex)$caption = ""
+attributes(Xtab_tex)$label = "tab1"
+attributes(Xtab_tex)$align = rep("c",length(attributes(Xtab_tex)$align))
+print.xtable(Xtab_tex,table.placement = "h!",sanitize.text.function = function(x){x})
+
+
+## Figure S5
+pdf(file = "../../SPL/suppmat/fig6.pdf",width = 8,height = 7)
+hist(has3_rsem,nclass = 20,border = "gray",col = adjustcolor("#8EE5EE", alpha.f = 0.5),main="",xlab="",ylab="",ylim=c(0,25),xlim=c(0,1e3))
+hist(y_hat,nclass = 20,border = "gray",col = adjustcolor("#FFD39B", alpha.f = 0.5),main="",xlab="",ylab="",add=TRUE)
+legend(x = 600, y = 20,border = "transparent",legend = c("RSEM","DEFUZZ"),col = c("#8EE5EE","#FFD39B"),ncol = 1,box.col = "white",
+       bg = "transparent",x.intersp = 0.5,cex = 1.5,pt.cex=2,pch=15)
+dev.off()
+
+
+set.seed(230326)
+B <- min(NROW(Y_hat_defuzz),NROW(Y_hat_rsem))
+K <- 1185; bbd <- sample(x = 1:B,size = 2e3,replace = FALSE)
+C_hat_defuzz <- t(mapply(function(b){mapply(function(i)rbeta(n = 1,shape1 = (1/K*Y_hat_defuzz[b,i])*dataout$y_1.h[i],shape2 = dataout$y_1.h[i]-(1/K*Y_hat_defuzz[b,i])*dataout$y_1.h[i]),1:n)*K},bbd))
+C_hat_rsem <- t(mapply(function(b){mapply(function(i)rbeta(n = 1,shape1 = (1/K*Y_hat_rsem[b,i])*dataout$y_1.h[i],shape2 = dataout$y_1.h[i]-(1/K*Y_hat_rsem[b,i])*dataout$y_1.h[i]),1:n)*K},bbd))  
+
+
+## Figure S6
+pdf(file = "../../SPL/suppmat/fig7.pdf",width = 8,height = 7)  
+pt1 <- (mean(dataout$y_c/dataout$y_1.h)); pt2 <- (diff(quantile(dataout$y_c/dataout$y_1.h,c(0.1,0.9))))
+xt1 <- (mapply(function(b)mean(C_hat_defuzz[b,]/dataout$y_1.h),1:length(bbd))); yt1 <- (mapply(function(b)diff(quantile(C_hat_defuzz[b,]/dataout$y_1.h,c(0.1,0.9))),1:length(bbd)))
+xt2 <- (mapply(function(b)mean(C_hat_rsem[b,]/dataout$y_1.h),1:length(bbd))); yt2 <- (mapply(function(b)diff(quantile(C_hat_rsem[b,]/dataout$y_1.h,c(0.1,0.9))),1:length(bbd)))
+xlims <- c(min(min(xt1),min(xt2)),max(max(xt1),max(xt2))); ylims <- c(min(min(yt1),min(yt2)),max(max(yt1),max(yt2)));
+plot(xt1,yt1,bty="n",xlab="",ylab="",ylim=ylims,xlim=xlims,col="#CDCDC1",pch=20,cex=3); points(pt1,pt2,pch=20,col=2,cex=4); 
+points(xt2,yt2,bty="n",ylim=ylims,xlim=xlims,col=adjustcolor("#548B54", alpha.f = 0.5),pch=20,cex=2); 
+legend(x = 10, y = 12,border = "transparent",legend = c("Defuzz","Rsem"),col = c("#CDCDC1","#548B54"),ncol = 1,box.col = "white",bg = "transparent",
+       x.intersp = 0.5,cex = 1.5,pt.cex=2,pch=15)
+dev.off()
+
+
+
+# Case-study-based simulation ---------------------------------------------
+
+#To appropriately run the case-study simulation (see the folder M1_short_simul): 
+# run gendata.R to populate simdata/
+# run run_sim.sh on a proper HPC system equipped with Slurm and Singularuity 
+# the folder fitdata/ is populated with the model estimates 
+
+# Assuming the folder fitdata/ is populated appropriately, run the following code:
+fls <- list.files(path = "M1_short_simulation/fitdata/",full.names = TRUE,pattern = ".rds")
+Out <- array(NA,c(length(fls),4,2),dimnames = list(NULL,c("mean","err","cvg","leng"),c("CNAR","Naive"))) 
+
+for(i in 1:length(fls)){
+  cat(i,"\t")
+  load_status <- try(load(fls[i]), silent = TRUE)
+  if(!inherits(load_status, "try-error")){
+    current_iid <- unlist(strsplit(x = fls[i],split = "fitdata_|.rds"))[2]
+    load(paste0("M1_short_simulation/simdata/simdata_",current_iid,".rds")) #it contains theta_m needed to compute mu0 and get kappa0 (theta_m[4])
+    
+    if(!is.null(naive_draws)){
+      
+      p_cnar_k <- matrix(posterior::merge_chains(cnar_draws[,,5]))
+      p_naive_k <- matrix(posterior::merge_chains(naive_draws[,,5]))
+      
+      Bb <- min(nrow(p_cnar_k),nrow(p_naive_k))
+      p_cnar_k <- p_cnar_k[1:Bb,]; p_naive_k <- p_naive_k[1:Bb,]
+      
+      Out[i,1,1:2] <- c(mean(p_cnar_k),mean(p_naive_k))
+      Out[i,2,1:2] <- apply(cbind(p_cnar_k,p_naive_k)-theta_m[4],2,mean)
+      qm1 <- quantile(p_cnar_k,c(0.025,0.975)); qm2 <- quantile(p_naive_k,c(0.025,0.975)); 
+      Out[i,3,1:2] <- c(as.numeric(theta_m[4]>qm1[1]&theta_m[4]<qm1[2]),
+                        as.numeric(theta_m[4]>qm2[1]&theta_m[4]<qm2[2]))
+      Out[i,4,1:2] <- c(as.numeric(diff(qm1)),as.numeric(diff(qm2)))
+      
+      mu0 <- exp(X%*%theta_m[1:3])
+      var0 <- mu0 + mu0^2 / exp(theta_m[4])
+      
+      p_cnar_b <- matrix(posterior::merge_chains(cnar_draws[,,2:4]),ncol = 3)
+      p_naive_b <- matrix(posterior::merge_chains(naive_draws[,,2:4]),ncol = 3)
+      p_cnar_b <- p_cnar_b[1:Bb,]; p_naive_b <- p_naive_b[1:Bb,]
+    }
+  }
+  
+}
+save(Out,file = "M1_short_simulation/data_res.Rdata")
+
+A <- cbind(apply(Out[,2,],2,mean,na.rm=TRUE),
+           apply(Out[,3,],2,mean,na.rm=TRUE),
+           apply(Out[,4,],2,mean,na.rm=TRUE))
+colnames(A) <- c("bias","0.95 coverage","0.95 interval length")
+rownames(A) <- c("CNAR","defuzz")
+
+## Table S4
+Xtab_tex = xtable::xtable(A)
+attributes(Xtab_tex)$caption = ""
+attributes(Xtab_tex)$label = "tab1"
+attributes(Xtab_tex)$align = rep("c",length(attributes(Xtab_tex)$align))
+print.xtable(Xtab_tex,table.placement = "h!",sanitize.text.function = function(x){x})
 
 
 
