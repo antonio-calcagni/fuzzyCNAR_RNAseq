@@ -2,7 +2,7 @@
 This repository contains algorithms (implemented in R) and data to reproduce the main findings of the research article "Non-ignorable fuzziness in granular counts: the case of RNA-seq data" (https://arxiv.org/abs/2604.00763). 
 
 The folder tree is as follows:
-- data: it contains the observed raw granular counts (raw_g_counts/), the beta-type approximated granualar counts (.rds file), and the complete dataset for the HAS3 study (HAS3_complete.csv);
+- data: it contains the observed raw granular counts (raw_g_counts/), the beta-type approximated granular counts (.rds file), and the complete dataset for the HAS3 study (HAS3_complete.csv);
 - out: it is used to store processed data and generated figures.
 
 The R/Stan scripts are as follows:
